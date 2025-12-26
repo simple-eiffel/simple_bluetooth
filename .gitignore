@@ -1,0 +1,6 @@
+# Build artifacts
+EIFGENs/
+*.exe
+
+# Debug
+exception_trace.log

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>simple_bluetooth - Bluetooth Communication for Eiffel</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="https://raw.githubusercontent.com/simple-eiffel/claude_eiffel_op_docs/main/artwork/LOGO.png" alt="simple_* logo" class="logo">
+        </div>
+        <h1>simple_bluetooth</h1>
+        <p class="tagline">Bluetooth Serial Port Profile (SPP) Communication for Eiffel</p>
+        <div class="badges">
+            <span class="badge badge-version">Phase 1</span>
+            <span class="badge badge-license">MIT</span>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#quick-start">Quick Start</a></li>
+            <li><a href="#classes">Classes</a></li>
+            <li><a href="#configuration">Configuration</a></li>
+            <li><a href="#api-reference">API Reference</a></li>
+            <li><a href="https://github.com/simple-eiffel/simple_bluetooth">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="overview">
+            <h2>Overview</h2>
+            <p>
+                <strong>simple_bluetooth</strong> provides Bluetooth Serial Port Profile (SPP) communication
+                for Eiffel applications. Phase 1 builds on <code>simple_serial</code> to communicate with
+                Bluetooth devices that appear as virtual COM ports after pairing. Supports device discovery,
+                connection management, and fluent configuration.
+            </p>
+            <p>
+                Part of the <a href="https://github.com/simple-eiffel">Simple Eiffel</a> ecosystem.
+            </p>
+        </section>
+
+        <section id="quick-start">
+            <h2>Quick Start</h2>
+
+            <h3>Installation</h3>
+            <ol>
+                <li>Set the environment variable:
+<pre><code>SIMPLE_EIFFEL=D:\prod</code></pre>
+                </li>
+                <li>Add to your ECF file:
+<pre><code>&lt;library name="simple_bluetooth" location="$SIMPLE_EIFFEL/simple_bluetooth/simple_bluetooth.ecf"/&gt;</code></pre>
+                </li>
+            </ol>
+
+            <h3>Basic Usage</h3>
+<pre><code><span class="keyword">local</span>
+    bluetooth: <span class="type">SIMPLE_BLUETOOTH</span>
+<span class="keyword">do</span>
+    <span class="keyword">create</span> bluetooth
+
+    <span class="comment">-- Scan for paired devices</span>
+    bluetooth.scan
+    <span class="keyword">across</span> bluetooth.devices <span class="keyword">as</span> d <span class="keyword">loop</span>
+        print (d.display_name + <span class="string">"%N"</span>)
+    <span class="keyword">end</span>
+
+    <span class="comment">-- Connect to first device</span>
+    <span class="keyword">if</span> bluetooth.has_devices <span class="keyword">then</span>
+        bluetooth.open_device (bluetooth.devices.first)
+        <span class="keyword">if</span> bluetooth.is_connected <span class="keyword">then</span>
+            <span class="keyword">if</span> bluetooth.write (<span class="string">"AT+VERSION?"</span>) <span class="keyword">then</span>
+                print (bluetooth.read (50))
+            <span class="keyword">end</span>
+            bluetooth.close
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+        </section>
+
+        <section id="classes">
+            <h2>Classes</h2>
+            <table>
+                <tr>
+                    <th>Class</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><code>SIMPLE_BLUETOOTH</code></td>
+                    <td>Main facade with connection management</td>
+                </tr>
+                <tr>
+                    <td><code>BLUETOOTH_SERIAL_PORT</code></td>
+                    <td>Port wrapper for SPP communication</td>
+                </tr>
+                <tr>
+                    <td><code>BLUETOOTH_SCANNER</code></td>
+                    <td>Discover paired devices</td>
+                </tr>
+                <tr>
+                    <td><code>BLUETOOTH_DEVICE</code></td>
+                    <td>Device information (name, address, port)</td>
+                </tr>
+            </table>
+        </section>
+
+        <section id="configuration">
+            <h2>Configuration</h2>
+            <p>Configure baud rate for your Bluetooth device:</p>
+
+<pre><code><span class="keyword">local</span>
+    bluetooth: <span class="type">SIMPLE_BLUETOOTH</span>
+<span class="keyword">do</span>
+    <span class="keyword">create</span> bluetooth
+    bluetooth.set_baud_rate (115200)  <span class="comment">-- For HC-05 in AT mode</span>
+    bluetooth.open_port (<span class="string">"COM6"</span>)
+
+    <span class="comment">-- Or use factory configs</span>
+    <span class="keyword">create</span> bluetooth.make_with_config (bluetooth.config_115200)
+<span class="keyword">end</span></code></pre>
+
+            <h3>Common Baud Rates</h3>
+            <table>
+                <tr>
+                    <th>Device Type</th>
+                    <th>Typical Baud Rate</th>
+                </tr>
+                <tr>
+                    <td>HC-05/HC-06 (data mode)</td>
+                    <td>9600</td>
+                </tr>
+                <tr>
+                    <td>HC-05 (AT mode)</td>
+                    <td>38400</td>
+                </tr>
+                <tr>
+                    <td>OBD-II adapters</td>
+                    <td>38400 or 115200</td>
+                </tr>
+                <tr>
+                    <td>GPS modules</td>
+                    <td>9600 or 4800</td>
+                </tr>
+            </table>
+        </section>
+
+        <section id="api-reference">
+            <h2>API Reference</h2>
+
+            <div class="api-section">
+                <h3>SIMPLE_BLUETOOTH</h3>
+                <table>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td><code>scan</code></td>
+                        <td>Scan for paired Bluetooth devices</td>
+                    </tr>
+                    <tr>
+                        <td><code>devices: ARRAYED_LIST [BLUETOOTH_DEVICE]</code></td>
+                        <td>List of discovered devices</td>
+                    </tr>
+                    <tr>
+                        <td><code>has_devices: BOOLEAN</code></td>
+                        <td>Were any devices found?</td>
+                    </tr>
+                    <tr>
+                        <td><code>open_device (device)</code></td>
+                        <td>Open connection to device</td>
+                    </tr>
+                    <tr>
+                        <td><code>open_port (port_name)</code></td>
+                        <td>Open connection to COM port directly</td>
+                    </tr>
+                    <tr>
+                        <td><code>is_connected: BOOLEAN</code></td>
+                        <td>Is device currently connected?</td>
+                    </tr>
+                    <tr>
+                        <td><code>write (data): BOOLEAN</code></td>
+                        <td>Write string to device</td>
+                    </tr>
+                    <tr>
+                        <td><code>read (max_length): STRING_8</code></td>
+                        <td>Read up to max characters</td>
+                    </tr>
+                    <tr>
+                        <td><code>close</code></td>
+                        <td>Close connection</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="api-section">
+                <h3>BLUETOOTH_DEVICE</h3>
+                <table>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td><code>name: STRING_32</code></td>
+                        <td>Friendly device name (e.g., "HC-05")</td>
+                    </tr>
+                    <tr>
+                        <td><code>address: STRING_32</code></td>
+                        <td>Bluetooth MAC address</td>
+                    </tr>
+                    <tr>
+                        <td><code>com_port: STRING_32</code></td>
+                        <td>Virtual COM port (e.g., "COM6")</td>
+                    </tr>
+                    <tr>
+                        <td><code>display_name: STRING_32</code></td>
+                        <td>Human-readable format (e.g., "HC-05 (COM6)")</td>
+                    </tr>
+                    <tr>
+                        <td><code>is_unknown: BOOLEAN</code></td>
+                        <td>Is this an unidentified device?</td>
+                    </tr>
+                </table>
+            </div>
+        </section>
+
+        <section id="features">
+            <h2>Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Bluetooth SPP</h4>
+                    <p>Communicate with Bluetooth Serial Port Profile devices.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Device Discovery</h4>
+                    <p>Find paired Bluetooth devices with virtual COM ports.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Built on simple_serial</h4>
+                    <p>Uses proven serial port infrastructure.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Design by Contract</h4>
+                    <p>Full preconditions, postconditions, and invariants.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="phase1">
+            <h2>Phase 1 Scope</h2>
+            <p>This is Phase 1 implementation focusing on Bluetooth Serial Port Profile (SPP):</p>
+            <ul>
+                <li>Works with devices that appear as virtual COM ports after pairing</li>
+                <li>Requires devices to be paired via Windows Bluetooth settings first</li>
+                <li>Full device name/address lookup planned for Phase 2</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>Part of the <a href="https://simple-eiffel.github.io">Simple Eiffel</a> ecosystem.</p>
+        <p class="copyright">MIT License</p>
+    </footer>
+</body>
+</html>
