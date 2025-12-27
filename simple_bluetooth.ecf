@@ -14,14 +14,14 @@
 		</capability>
 		<library name="base" location="$ISE_LIBRARY\library\base\base.ecf"/>
 		<library name="time" location="$ISE_LIBRARY\library\time\time.ecf"/>
-		<library name="simple_serial" location="$SIMPLE_SERIAL\simple_serial.ecf"/>
+		<library name="simple_serial" location="$SIMPLE_EIFFEL\simple_serial\simple_serial.ecf"/>
 		<cluster name="src" location=".\src\" recursive="true"/>
 	</target>
 	<target name="simple_bluetooth_tests" extends="simple_bluetooth">
 		<root class="TEST_APP" feature="make"/>
 		<setting name="console_application" value="true"/>
 		<library name="testing" location="$ISE_LIBRARY\library\testing\testing.ecf"/>
-		<library name="simple_testing" location="$SIMPLE_TESTING\simple_testing.ecf"/>
+		<library name="simple_testing" location="$SIMPLE_EIFFEL\simple_testing\simple_testing.ecf"/>
 		<cluster name="bluetooth_tests" location=".\testing\" recursive="true"/>
 	</target>
 </system>
