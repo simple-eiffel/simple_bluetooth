@@ -4,3 +4,6 @@ EIFGENs/
 
 # Debug
 exception_trace.log
+*.melted
+*.epr
+*.log
