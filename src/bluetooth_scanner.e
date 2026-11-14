@@ -77,13 +77,25 @@ feature -- Operations
 
 			-- Use simple_serial's enumerator to find Bluetooth ports
 			serial_enumerator.refresh
-			across serial_enumerator.bluetooth_ports as port loop
-				add_device_for_port (port)
-			end
+			add_devices_from (serial_enumerator)
 
 			is_scanning := False
 		ensure
 			not_scanning: not is_scanning
+		end
+
+	add_devices_from (a_enumerator: SERIAL_PORT_ENUMERATOR)
+			-- Add a device for each Bluetooth port `a_enumerator' holds that has no device yet.
+			-- Scans nothing: `a_enumerator' may hold fixed ports, as in tests.
+		do
+			across a_enumerator.bluetooth_ports as ic_port loop
+				if not has_port (ic_port) then
+					add_device_for_port (ic_port)
+				end
+			end
+		ensure
+			every_bluetooth_port: across a_enumerator.bluetooth_ports as ic_port all has_port (ic_port) end
+			none_lost: device_count >= old device_count
 		end
 
 	refresh

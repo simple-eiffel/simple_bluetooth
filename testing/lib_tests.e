@@ -70,6 +70,53 @@ feature -- Scanner Tests
 			assert_non_negative ("count", scanner.device_count)
 		end
 
+	test_scanner_filters_fixed_ports
+			-- From fixed Windows and Linux ports, the scanner keeps exactly the
+			-- Bluetooth ones, once each, as unknown devices on their own ports.
+		local
+			l_scanner: BLUETOOTH_SCANNER
+			l_ports: SERIAL_PORT_ENUMERATOR
+		do
+			create l_ports.make_empty
+			l_ports.put_port ("COM5", "Standard Serial over Bluetooth link (COM5)", "BTHENUM\{00001101-0000-1000-8000-00805F9B34FB}_LOCALMFG&0002")
+			l_ports.put_port ("COM3", "USB Serial Device (COM3)", "USB\VID_2341&PID_0043&REV_0001")
+			l_ports.put_port ("COM1", "Communications Port (COM1)", "ACPI\PNP0501")
+			l_ports.put_port ("COM6", "Serial Port (COM6)", "BTHENUM\{00001101-0000-1000-8000-00805F9B34FB}_LOCALMFG&0000")
+			l_ports.put_port ("/dev/rfcomm0", "Bluetooth Serial Port", "")
+			l_ports.put_port ("/dev/ttyUSB0", "USB Serial Port", "")
+
+			create l_scanner.make
+			l_scanner.add_devices_from (l_ports)
+			assert_integers_equal ("three bluetooth ports", 3, l_scanner.device_count)
+			assert_true ("com5 by friendly name", l_scanner.has_port ("COM5"))
+			assert_true ("com6 by hardware id", l_scanner.has_port ("COM6"))
+			assert_true ("rfcomm0", l_scanner.has_port ("/dev/rfcomm0"))
+			assert_false ("usb skipped", l_scanner.has_port ("COM3"))
+			assert_false ("motherboard port skipped", l_scanner.has_port ("COM1"))
+			assert_false ("linux usb skipped", l_scanner.has_port ("/dev/ttyUSB0"))
+			assert_true ("unknown device", attached l_scanner.device_for_port ("COM5") as l_device and then l_device.is_unknown)
+
+			l_scanner.add_devices_from (l_ports)
+			assert_integers_equal ("no duplicates", 3, l_scanner.device_count)
+		end
+
+	test_scan_matches_serial_filter
+			-- A real scan finds a device for exactly the ports simple_serial
+			-- calls Bluetooth on this machine, however many there are.
+		local
+			l_scanner: BLUETOOTH_SCANNER
+			l_ports: SERIAL_PORT_ENUMERATOR
+		do
+			create l_scanner.make
+			l_scanner.scan
+			create l_ports.make
+			print ("%N    bluetooth devices found: " + l_scanner.device_count.out + "%N    ")
+			assert_integers_equal ("one device per bluetooth port", l_ports.bluetooth_ports.count, l_scanner.device_count)
+			across l_ports.bluetooth_ports as ic_port loop
+				assert_true ("device on bluetooth port", l_scanner.has_port (ic_port))
+			end
+		end
+
 feature -- Port Tests
 
 	test_port_creation

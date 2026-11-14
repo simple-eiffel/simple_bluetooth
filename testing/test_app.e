@@ -43,6 +43,8 @@ feature -- Test Runners
 			run_test (agent tests.test_device_display_name, "test_device_display_name")
 			run_test (agent tests.test_scanner_creation, "test_scanner_creation")
 			run_test (agent tests.test_scanner_scan, "test_scanner_scan")
+			run_test (agent tests.test_scanner_filters_fixed_ports, "test_scanner_filters_fixed_ports")
+			run_test (agent tests.test_scan_matches_serial_filter, "test_scan_matches_serial_filter")
 			run_test (agent tests.test_port_creation, "test_port_creation")
 			run_test (agent tests.test_port_from_device, "test_port_from_device")
 			run_test (agent tests.test_port_config, "test_port_config")
@@ -57,15 +59,21 @@ feature {NONE} -- Implementation
 	failed: INTEGER
 
 	run_test (a_test: PROCEDURE; a_name: STRING)
-			-- Run a single test and track results.
+			-- Run a single test and track results; a failure is counted and the run goes on.
+		local
+			l_retried: BOOLEAN
 		do
-			print ("  " + a_name + "...")
-			a_test.call (Void)
-			passed := passed + 1
-			print ("OK%N")
+			if not l_retried then
+				print ("  " + a_name + "...")
+				a_test.call (Void)
+				passed := passed + 1
+				print ("OK%N")
+			end
 		rescue
 			failed := failed + 1
 			print ("FAILED%N")
+			l_retried := True
+			retry
 		end
 
 end
