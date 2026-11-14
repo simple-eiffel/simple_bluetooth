@@ -21,7 +21,7 @@ Part of the [Simple Eiffel](https://github.com/simple-eiffel) ecosystem.
 
 ## Overview
 
-SIMPLE_BLUETOOTH provides Bluetooth Serial Port Profile (SPP) communication for Eiffel applications. Phase 1 builds on simple_serial to communicate with Bluetooth devices that appear as virtual COM ports after pairing. Supports device discovery, connection management, and fluent configuration.
+SIMPLE_BLUETOOTH provides Bluetooth Serial Port Profile (SPP) communication for Eiffel applications. Phase 1 builds on simple_serial to communicate with Bluetooth devices that appear as serial ports after pairing (COM ports on Windows, `/dev/cu.*` on macOS, `/dev/rfcommN` on Linux). Supports device discovery, connection management, and fluent configuration.
 
 ## Quick Start
 
@@ -58,7 +58,7 @@ bluetooth: SIMPLE_BLUETOOTH
 
 create bluetooth
 bluetooth.set_baud_rate (115200)  -- For HC-05 in AT mode
-bluetooth.open_port ("COM6")
+bluetooth.open_port ("COM6")  -- macOS: "/dev/cu.HC-05", Linux: "/dev/rfcomm0"
 
 -- Or use factory configs
 create bluetooth.make_with_config (bluetooth.config_115200)
@@ -76,7 +76,7 @@ create bluetooth.make_with_config (bluetooth.config_115200)
 ## Features
 
 - **Bluetooth SPP support** - Communicate with paired Bluetooth Serial devices
-- **Device discovery** - Find paired Bluetooth devices with virtual COM ports
+- **Device discovery** - Find paired Bluetooth serial ports (limited; see Known Limits)
 - **Built on simple_serial** - Uses proven serial port infrastructure
 - **Design by Contract** - Full preconditions/postconditions
 - **SCOOP compatible** - Concurrency-ready design
@@ -96,6 +96,10 @@ create bluetooth.make_with_config (bluetooth.config_115200)
 ```
 SIMPLE_EIFFEL=D:\prod
 ```
+On macOS or Linux:
+```bash
+export SIMPLE_EIFFEL=$HOME/simple_eiffel
+```
 
 2. Add to ECF:
 ```xml
@@ -109,16 +113,23 @@ SIMPLE_EIFFEL=D:\prod
 ## Phase 1 Scope
 
 This is Phase 1 implementation focusing on Bluetooth Serial Port Profile (SPP):
-- Works with devices that appear as virtual COM ports after pairing
-- Requires devices to be paired via Windows Bluetooth settings first
-- Full device name/address lookup planned for Phase 2
+- Works with devices that appear as serial ports after pairing
+- Pair devices in the OS first. On Linux, also bind the device as root: `rfcomm bind 0 <address>`.
+- Full device name/address lookup planned for Phase 2 (name and address lookup return Void for now)
+
+## Known Limits
+
+- `scan` finds no ports on Windows yet. Open the port by name with `open_port`.
+- On macOS and Linux, `scan` finds only ports whose names say Bluetooth or rfcomm (for example `/dev/cu.Bluetooth-Incoming-Port`). Open other ports by name, like `/dev/cu.HC-05`.
+- On Linux, your user needs access to the port (usually the `dialout` group).
+- Tests check the value objects only; they do not talk to real Bluetooth hardware.
 
 ## Requirements
 
 - EiffelStudio 25.02+
-- Windows 10+
+- Windows 10+, macOS, or Linux with BlueZ
 - simple_serial library
-- Bluetooth SPP device (paired via Windows)
+- Bluetooth SPP device, paired in the OS
 
 ## License
 
