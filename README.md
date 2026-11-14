@@ -119,7 +119,7 @@ This is Phase 1 implementation focusing on Bluetooth Serial Port Profile (SPP):
 
 ## Known Limits
 
-- `scan` finds no ports on Windows yet. Open the port by name with `open_port`.
+- On Windows, `scan` finds the COM ports Windows describes as Bluetooth links ("Standard Serial over Bluetooth link", or a `BTHENUM` hardware id).
 - On macOS and Linux, `scan` finds only ports whose names say Bluetooth or rfcomm (for example `/dev/cu.Bluetooth-Incoming-Port`). Open other ports by name, like `/dev/cu.HC-05`.
 - On Linux, your user needs access to the port (usually the `dialout` group).
 - Tests check the value objects only; they do not talk to real Bluetooth hardware.
